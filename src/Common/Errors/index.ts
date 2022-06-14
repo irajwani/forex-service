@@ -1,8 +1,8 @@
 import { HttpException, HttpStatus } from '@nestjs/common';
 import { ERRORS } from './messages';
 
-export class UserExistsException extends HttpException {
+export class InternalServerException extends HttpException {
   constructor() {
-    super(ERRORS.USER_EXISTS, HttpStatus.BAD_REQUEST);
+    super(ERRORS.INTERNAL_SERVER, HttpStatus.INTERNAL_SERVER_ERROR);
   }
 }

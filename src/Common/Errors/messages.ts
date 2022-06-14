@@ -1,10 +1,8 @@
-// import { CONSTANTS } from '../constants';
-
 const ERRORS = {
-  USER_EXISTS: {
+  INTERNAL_SERVER: {
     code: 1,
-    error: 'USER_EXISTS_ERROR',
-    message: 'User with this email already exists',
+    error: 'INTERNAL_SERVER_ERROR',
+    message: 'Internal Server Error',
   },
 };
 

@@ -1,31 +1,33 @@
-version: "3"
+version: '3.7'
 services:
-  postgres:
-    container_name: postgres
-    image: postgres:latest
+  redis:
+    container_name: redis
+    image: redis:latest
+    networks:
+      - webnet
+    env_file:
+      - docker.env
     ports:
-      - "5432:5432"
+      - 6379:6379
+  main:
+    container_name: main
+    build:
+      context: .
+      target: dev
     volumes:
-      - /var/tmp/docker/postgres:/data/postgres
+      - .:/usr/src/app
+      - /usr/src/app/node_modules
+    ports:
+      - ${PORT}:${PORT}
     env_file:
       - docker.env
     networks:
-      - postgres
-
-  pgadmin:
-    links:
-      - postgres:postgres
-    container_name: pgadmin
-    image: dpage/pgadmin4
-    ports:
-      - "8080:80"
-    volumes:
-      - /var/tmp/docker/pgadmin:/root/.pgadmin
-    env_file:
-      - docker.env
-    networks:
-      - postgres
-
+      - webnet
+    environment:
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+    depends_on:
+      - redis
+    command: npm run start:dev
 networks:
-  postgres:
-    driver: bridge
+  webnet:

@@ -1,13 +1,10 @@
 import * as request from 'supertest';
 import { INestApplication, CACHE_MANAGER } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
-import ConfigurationModule from '../src/Configurations/Config/config.module';
-import { FixerApiModule } from '../src/Common/Modules/FixerApi/fixer-api.module';
 import { ForexService } from '../src/Forex/forex.service';
-import { ForexModule } from '../src/Forex/forex.module';
-import { HealthModule } from '../src/Health/health.module';
-import { getRateRequestMock, getRateResponseMock } from './Mocks/getRate';
+import { getRateResponseMock } from './Mocks/getRate';
 import { AppModule } from '../src/app.module';
+import { healthCheckResponseMock } from './Mocks/healthCheck';
 
 const mockCacheManager = {
   set: jest.fn(),
@@ -16,14 +13,14 @@ const mockCacheManager = {
   reset: jest.fn(),
 };
 
-const requestFunction = (url: string, data: string, app: INestApplication) => {
+const requestFunction = <T>(url: string, data: T, app: INestApplication) => {
   return request(app.getHttpServer()).get(url).expect(200).expect(data);
 };
 
 describe('App (e2e)', () => {
   let app: INestApplication;
   let forexService = {
-    getRate: (from, to) => getRateResponseMock,
+    getRate: jest.fn(() => getRateResponseMock),
   };
 
   beforeAll(async () => {
@@ -46,21 +43,14 @@ describe('App (e2e)', () => {
 
   describe('Health', () => {
     it('should say app is healthy', async () => {
-      return request(app.getHttpServer())
-        .get('/health')
-        .expect(200)
-        .expect({ status: 'ok', info: {}, error: {}, details: {} });
+      return requestFunction('/health', healthCheckResponseMock, app);
     });
   });
 
   describe('Forex', () => {
     it(`/GET forex should return expected result`, async () => {
-      return request(app.getHttpServer())
-        .get('/forex')
-        .expect(200)
-        .expect(
-          forexService.getRate(getRateRequestMock.from, getRateRequestMock.to),
-        );
+      const expected = forexService.getRate();
+      return requestFunction('/forex', expected, app);
     });
   });
 });

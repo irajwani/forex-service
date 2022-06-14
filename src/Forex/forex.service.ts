@@ -8,6 +8,7 @@ import { Symbols } from 'src/Common/Types/symbols';
 import { Rate } from './Models/rate';
 import { GetRateArgs } from './Args/get-rate.args';
 import { TCurrencyPair } from 'src/Common/Types/rates';
+import { InternalServerException } from 'src/Common/Errors';
 
 @Injectable()
 export class ForexService {
@@ -35,8 +36,7 @@ export class ForexService {
         await this.cache.set(currencyPair, JSON.stringify(rate));
         return rate;
       } catch (err) {
-        console.log(err);
-        throw err;
+        throw new InternalServerException();
       }
     }
     return cachedRate;

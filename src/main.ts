@@ -25,14 +25,17 @@ async function bootstrap() {
   if (appConfig.swaggerEnabled) {
     const config = new DocumentBuilder()
       .setTitle('Xanpool Server')
-      .setDescription('REST and GraphQL API to fetch currency rate pairs')
+      .setDescription(
+        `REST API to fetch currency rate pairs. Visit ${appConfig.host}:${appConfig.port}/graphql for GraphQL playground`,
+      )
       .setVersion('0.0.1')
       .build();
     const document = SwaggerModule.createDocument(app, config);
     SwaggerModule.setup('documentation', app, document);
   }
 
-  const port: string | number = process.env.PORT || 3000;
+  const port: string | number = appConfig.PORT || 3000;
   await app.listen(port);
+  console.log(`Application is running on: ${await app.getUrl()}`);
 }
 bootstrap();

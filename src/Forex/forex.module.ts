@@ -6,16 +6,21 @@ import { ForexService } from './forex.service';
 import * as RedisStore from 'cache-manager-redis-store';
 import { ForexResolver } from './forex.resolver';
 import { DateScalar } from '../Common/GraphQL/Scalars/DateScalar';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 
 @Module({
   imports: [
-    CacheModule.register({
-      store: RedisStore,
-      socket: {
-        host: 'localhost',
-        port: 6379,
+    CacheModule.registerAsync({
+      imports: [ConfigModule],
+      useFactory: (configService: ConfigService) => {
+        return {
+          store: RedisStore,
+          host: configService.get<string>('app.redisHost'),
+          port: configService.get<number>('app.redisPort'),
+          ttl: constants.HOUR,
+        };
       },
-      ttl: constants.HOUR,
+      inject: [ConfigService],
     }),
     FixerApiModule,
   ],

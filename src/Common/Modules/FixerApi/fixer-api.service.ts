@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { AxiosResponse } from 'axios';
 import { HttpService } from 'nestjs-http-promise';
+import { InternalServerException } from 'src/Common/Errors';
 import { IGetRatesData } from './Types/fixer-api-responses';
 
 @Injectable()
@@ -17,7 +18,7 @@ export class FixerApiService {
       const { data }: AxiosResponse = await this.httpService.get(url);
       return data;
     } catch (err) {
-      throw err;
+      throw new InternalServerException();
     }
   }
 }
