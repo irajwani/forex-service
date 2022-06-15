@@ -8,7 +8,7 @@ export class ForexResolver {
   constructor(private readonly forexService: ForexService) {}
 
   @Query(() => [Rate], { name: 'rates' })
-  async getRate(@Args() getRateArgs: GetRateArgs): Promise<Rate[]> {
+  async getRates(@Args() getRateArgs: GetRateArgs): Promise<Rate[]> {
     return this.forexService.getRates(getRateArgs);
   }
 }

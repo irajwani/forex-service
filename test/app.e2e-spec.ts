@@ -5,6 +5,8 @@ import { ForexService } from '../src/Forex/forex.service';
 import { getRateResponseMock } from './Mocks/getRate';
 import { AppModule } from '../src/app.module';
 import { healthCheckResponseMock } from './Mocks/healthCheck';
+import { Symbols } from '../src/Common/Types/symbols';
+import { GetRateArgs } from '../src/Forex/Args/get-rate.args';
 
 const mockCacheManager = {
   set: jest.fn(),
@@ -13,14 +15,23 @@ const mockCacheManager = {
   reset: jest.fn(),
 };
 
-const requestFunction = <T>(url: string, data: T, app: INestApplication) => {
-  return request(app.getHttpServer()).get(url).expect(200).expect(data);
+const requestFunction = <T>(
+  url: string,
+  body: GetRateArgs,
+  expectedData: T,
+  app: INestApplication,
+) => {
+  return request(app.getHttpServer())
+    .post(url)
+    .send(body)
+    .expect(200)
+    .expect(expectedData);
 };
 
 describe('App (e2e)', () => {
   let app: INestApplication;
   let forexService = {
-    getRate: jest.fn(() => getRateResponseMock),
+    getRates: jest.fn(({ from, to }) => getRateResponseMock),
   };
 
   beforeAll(async () => {
@@ -43,14 +54,21 @@ describe('App (e2e)', () => {
 
   describe('Health', () => {
     it('should say app is healthy', async () => {
-      return requestFunction('/health', healthCheckResponseMock, app);
+      return request(app.getHttpServer())
+        .get('/health')
+        .expect(200)
+        .expect(healthCheckResponseMock);
     });
   });
 
   describe('Forex', () => {
-    it(`/GET forex should return expected result`, async () => {
-      const expected = forexService.getRate();
-      return requestFunction('/forex', expected, app);
+    it(`/POST forex should return expected result`, async () => {
+      const body = {
+        from: Symbols.USD,
+        to: [Symbols.SGD],
+      };
+      const expected = forexService.getRates(body);
+      return requestFunction('/forex', body, expected, app);
     });
   });
 });

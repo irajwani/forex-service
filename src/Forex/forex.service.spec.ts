@@ -5,22 +5,17 @@ import { getRateResponseMock } from '../../test/Mocks/getRate';
 import { CACHE_MANAGER } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { FixerApiService } from '../Common/Modules/FixerApi/fixer-api.service';
+import { getLatestFromFixerApiMock } from '../../test/Mocks/getLatestFromFixer';
 
 const mockCacheManager = {
   set: jest.fn(),
-  get: jest.fn().mockReturnValue(JSON.stringify(getRateResponseMock)),
+  get: jest.fn().mockReturnValue(JSON.stringify(getRateResponseMock[0])),
   del: jest.fn(),
   reset: jest.fn(),
 };
 
 const mockFixerApiService = {
-  getLatest: jest.fn().mockReturnValue({
-    success: true,
-    timestamp: 1655150764,
-    base: 'USD',
-    date: '2022-06-13',
-    rates: { SGD: 1.31 },
-  }),
+  getLatest: jest.fn().mockReturnValue(getLatestFromFixerApiMock),
 };
 
 describe('ForexService', () => {
@@ -47,7 +42,7 @@ describe('ForexService', () => {
   describe('getRate', () => {
     it('should successfully return a rate between currency pairs', async () => {
       expect(
-        await service.getRate({ from: Symbols.USD, to: Symbols.SGD }),
+        await service.getRates({ from: Symbols.USD, to: [Symbols.SGD] }),
       ).toEqual(getRateResponseMock);
     });
   });

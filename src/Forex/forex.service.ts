@@ -7,7 +7,6 @@ import { Cron, CronExpression } from '@nestjs/schedule';
 import { Symbols } from '../Common/Types/symbols';
 import { Rate } from './Models/rate';
 import { GetRateArgs } from './Args/get-rate.args';
-import { TCurrencyPair } from '../Common/Types/rates';
 import { InternalServerException } from '../Common/Errors';
 
 @Injectable()

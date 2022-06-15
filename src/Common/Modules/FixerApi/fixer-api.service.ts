@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { AxiosResponse } from 'axios';
 import { HttpService } from 'nestjs-http-promise';
-import { InternalServerException } from 'src/Common/Errors';
+import { InternalServerException } from '../../Errors';
 import { IGetRatesData } from './Types/fixer-api-responses';
 import { Symbols } from '../../Types/symbols';
 

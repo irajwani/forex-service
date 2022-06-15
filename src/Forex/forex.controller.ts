@@ -11,7 +11,7 @@ export class ForexController {
 
   @Post()
   @HttpCode(HttpStatus.OK)
-  public getRate(@Body() body: GetRateArgs) {
+  public getRates(@Body() body: GetRateArgs) {
     const { from, to } = body;
     return this.forexService.getRates({ from, to });
   }

@@ -14,7 +14,7 @@ describe('ForexResolver', () => {
         {
           provide: ForexService,
           useFactory: () => ({
-            getRate: jest.fn((from: 'USD', to: 'SGD') => getRateResponseMock),
+            getRates: jest.fn((from, to) => getRateResponseMock),
           }),
         },
       ],
@@ -30,7 +30,7 @@ describe('ForexResolver', () => {
   describe('getRate', () => {
     it('should get exchange rate between currency pairs', async () => {
       expect(
-        await resolver.getRate({ from: Symbols.USD, to: Symbols.SGD }),
+        await resolver.getRates({ from: Symbols.USD, to: [Symbols.SGD] }),
       ).toEqual(getRateResponseMock);
     });
   });

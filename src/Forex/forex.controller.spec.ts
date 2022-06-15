@@ -15,12 +15,7 @@ describe('ForexController', () => {
         {
           provide: ForexService,
           useValue: {
-            getRate: jest.fn(({ from, to }) => {
-              return {
-                ...getRateResponseMock,
-                pair: `${from}-${to}`,
-              };
-            }),
+            getRates: jest.fn(({ from, to }) => getRateResponseMock),
           },
         },
       ],
@@ -34,9 +29,17 @@ describe('ForexController', () => {
   });
 
   it('should successfully get rate between currencies', async () => {
-    const rate = await controller.getRate({
+    const rate = await controller.getRates({
       from: Symbols.USD,
-      to: Symbols.SGD,
+      to: [Symbols.SGD],
+    });
+    expect(rate).toStrictEqual(getRateResponseMock);
+  });
+
+  it('should throw validation error requesting unique values in "to" prop of body', async () => {
+    const rate = await controller.getRates({
+      from: Symbols.USD,
+      to: [Symbols.SGD, Symbols.SGD],
     });
     expect(rate).toStrictEqual(getRateResponseMock);
   });
