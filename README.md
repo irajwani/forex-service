@@ -17,6 +17,12 @@ $ docker build -t xanpool-assignment .
 $ docker-compose up
 ```
 
+## OR use docker
+
+```bash
+$ docker pull irajwani/xanpool-assignment:latest
+```
+
 Then proceed to usage section
 
 Alternatively, if you would like to run the app locally, and node_modules fail to install, it might be a node version issue (I used node 12.18.1)
@@ -58,11 +64,11 @@ query {
 
 ```bash
 # Unit/Integration tests
-npm run test
+$ npm run test
 
 # End to End tests
-npm run test:e2e
+$ npm run test:e2e
 
 # Coverage report
-npm run test:cov
+$ npm run test:cov
 ```
