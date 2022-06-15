@@ -1,18 +1,4 @@
-import {
-  Body,
-  Controller,
-  Get,
-  Headers,
-  Param,
-  Post,
-  Query,
-  Req,
-  Res,
-  HttpStatus,
-  Put,
-  Patch,
-  HttpCode,
-} from '@nestjs/common';
+import { Body, Controller, Post, HttpStatus, HttpCode } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
 import { GetRateArgs } from './Args/get-rate.args';
@@ -27,6 +13,6 @@ export class ForexController {
   @HttpCode(HttpStatus.OK)
   public getRate(@Body() body: GetRateArgs) {
     const { from, to } = body;
-    return this.forexService.getRate({ from, to });
+    return this.forexService.getRates({ from, to });
   }
 }

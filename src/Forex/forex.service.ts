@@ -4,11 +4,11 @@ import * as Promise from 'bluebird';
 import { FixerApiService } from '../Common/Modules/FixerApi/fixer-api.service';
 import constants from '../Common/constants';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { Symbols } from 'src/Common/Types/symbols';
+import { Symbols } from '../Common/Types/symbols';
 import { Rate } from './Models/rate';
 import { GetRateArgs } from './Args/get-rate.args';
-import { TCurrencyPair } from 'src/Common/Types/rates';
-import { InternalServerException } from 'src/Common/Errors';
+import { TCurrencyPair } from '../Common/Types/rates';
+import { InternalServerException } from '../Common/Errors';
 
 @Injectable()
 export class ForexService {
@@ -17,44 +17,67 @@ export class ForexService {
     private readonly fixerApi: FixerApiService,
   ) {}
 
-  public async getRate(args: GetRateArgs): Promise<Rate> {
+  private generateCurrencyPairs(from: Symbols, to: Symbols[]) {
+    const pairs = [];
+    to.forEach((symbol) => {
+      pairs.push([from, symbol].join('-'));
+    });
+    return pairs;
+  }
+
+  public async getRates(args: GetRateArgs): Promise<Rate[]> {
     const { from, to } = args;
-    const currencyPair: string = `${from}-${to}`;
-    const cachedRate: Rate = JSON.parse(await this.cache.get(currencyPair));
-    if (!cachedRate) {
-      try {
-        const [from, to] = currencyPair.split('-');
-        const data = await this.fixerApi.getLatest(from, to);
+    const cachedRates: Rate[] = [];
+    const noncachedSymbols: Symbols[] = [];
+    const currencyPairs = this.generateCurrencyPairs(from, to);
+
+    try {
+      await Promise.map(currencyPairs, async (pair, index) => {
+        const cachedRate: Rate = JSON.parse(await this.cache.get(pair));
+        if (!cachedRate) noncachedSymbols.push(to[index]);
+        else {
+          cachedRates.push(cachedRate);
+        }
+      });
+
+      const rates: Rate[] = [];
+
+      if (noncachedSymbols.length > 0) {
+        const data = await this.fixerApi.getLatest(from, noncachedSymbols);
         const date = new Date(
           data.timestamp * constants.MILLISECONDS_PER_SECOND,
         );
-        const rate = {
-          pair: currencyPair,
-          rate: data.rates[to],
-          date,
-        };
-        await this.cache.set(currencyPair, JSON.stringify(rate));
-        return rate;
-      } catch (err) {
-        throw new InternalServerException();
+
+        await Promise.map(
+          Object.entries(data.rates),
+          async ([toCurrency, rate]) => {
+            const pair = [from, toCurrency].join('-');
+            const rateObj: Rate = {
+              pair,
+              date,
+              rate,
+            };
+            rates.push(rateObj);
+            await this.cache.set(pair, JSON.stringify(rateObj));
+          },
+        );
       }
+
+      return cachedRates.concat(rates);
+    } catch (err) {
+      throw new InternalServerException();
     }
-    return cachedRate;
   }
 
   @Cron(CronExpression.EVERY_HOUR)
   private async updateCacheWithRatesCron() {
-    const cachedPairs: TCurrencyPair[] = await this.cache.store.keys();
-    const fixedCurrencyPairs: TCurrencyPair[] = [
-      'USD-SGD',
-      'SGD-USD',
-      'USD-HKD',
-      'HKD-USD',
+    const chosenRateRequests: GetRateArgs[] = [
+      { from: Symbols.USD, to: [Symbols.SGD, Symbols.HKD] },
+      { from: Symbols.SGD, to: [Symbols.USD] },
+      { from: Symbols.HKD, to: [Symbols.USD] },
     ];
-    const currencyPairs = [...new Set(cachedPairs.concat(fixedCurrencyPairs))];
-    await Promise.map(currencyPairs, (pair) => {
-      const [from, to] = pair.split('-');
-      return this.getRate({ from, to });
+    await Promise.map(chosenRateRequests, ({ from, to }: GetRateArgs) => {
+      return this.getRates({ from, to });
     });
   }
 }

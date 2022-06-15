@@ -7,8 +7,8 @@ import { Rate } from './Models/rate';
 export class ForexResolver {
   constructor(private readonly forexService: ForexService) {}
 
-  @Query(() => Rate, { name: 'rate' })
-  async getRate(@Args() getRateArgs: GetRateArgs): Promise<Rate> {
-    return this.forexService.getRate(getRateArgs);
+  @Query(() => [Rate], { name: 'rates' })
+  async getRate(@Args() getRateArgs: GetRateArgs): Promise<Rate[]> {
+    return this.forexService.getRates(getRateArgs);
   }
 }
