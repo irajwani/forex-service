@@ -55,3 +55,14 @@ query {
   }
 }
 ```
+
+```bash
+# Unit/Integration tests
+npm run test
+
+# End to End tests
+npm run test:e2e
+
+# Coverage report
+npm run test:cov
+```
